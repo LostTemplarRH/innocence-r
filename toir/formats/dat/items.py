@@ -115,7 +115,14 @@ def insert_items(binary, items):
         write_items(_ITEM_CATEGORIES[i], sections[2*i], sections[2*i+1],
                     items[_ITEM_CATEGORIES[i].name])
         newbinary += sections[2*i]
+        if len(newbinary) % 16 != 0:
+            newbinary += bytes(16 - len(newbinary) % 16)
         newbinary += sections[2*i+1]
+        if len(newbinary) % 16 != 0:
+            newbinary += bytes(16 - len(newbinary) % 16)
+    newbinary += sections[-1]
+    if len(newbinary) % 16 != 0:
+        newbinary += bytes(16 - len(newbinary) % 16)
     return newbinary
 
 def recompile_items(l7cdir, csvdir, outputdir):
