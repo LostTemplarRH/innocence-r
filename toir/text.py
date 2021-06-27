@@ -1,3 +1,5 @@
+import re
+
 def decode_control_code(text, i):
     code = ord(text[i + 1])
     if code == 0x01:
@@ -33,6 +35,20 @@ def decode_control_code(text, i):
     else:
         return f'{{{code:02X}}}', i + 2
 
+_PUNCTUATION = r'…\u3000、？！!《》○―＝\n♪【】「｢｣」』）～〜・々)'
+_REDUNDANT_FIXED = re.compile(f'{{fixed}}(?P<chars>[{_PUNCTUATION}]+)({{variable}}|$)')
+_REDUNDANT_VARIABLE = re.compile(f'^{{variable}}[^{_PUNCTUATION}]')
+
+def _remove_spacing_cc(match):
+    return match.group('chars')
+
+def _remove_variable_cc(match):
+    return match.group(0).replace('{variable}', '')
+
+def remove_redundant_cc(text):
+    removed = re.sub(_REDUNDANT_FIXED, _remove_spacing_cc, text)
+    return re.sub(_REDUNDANT_VARIABLE, _remove_variable_cc, removed)
+
 def _decode_text(buffer):
     text = buffer.decode('utf-8')
     text_cc = ''
@@ -53,6 +69,9 @@ def decode_text(buffer, offset):
         if buffer[i] == 0:
             subbuffer = buffer[offset:i]
             return _decode_text(subbuffer)
+
+def decode_text_fixed(buffer, offset, length):
+    return _decode_text(buffer[offset:offset+length])
 
 def encode_text(string):
     return string.encode('utf-8') + b'\0'
