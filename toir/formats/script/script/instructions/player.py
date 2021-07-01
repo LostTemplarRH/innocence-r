@@ -24,6 +24,9 @@ class ScriptPlayerMotionPackSet(ScriptInstructionWithArgs):
 class ScriptPlayerMoveWait(ScriptInstruction):
     pass
 
+class ScriptPlayerPushCancel(ScriptInstruction):
+    pass
+
 class ScriptPlayerMotionChange(ScriptInstructionWithArgs):
     def __init__(self, opcode):
         super().__init__('<HBL', opcode)
@@ -76,3 +79,7 @@ class ScriptPlayerDirMoveRel(ScriptInstructionWithArgs):
 class ScriptPlayerMoveDirRel(ScriptInstructionWithArgs):
     def __init__(self, opcode):
         super().__init__('<HHHBLB', opcode)
+
+class ScriptPlayerShadowDisp(ScriptInstructionWithArgs):
+    def __init__(self, opcode):
+        super().__init__('<BH', opcode)

@@ -152,4 +152,27 @@ class ScriptObjectMoveDirRel(ScriptInstructionWithArgs):
 class ScriptObjectActive(ScriptInstructionWithArgs):
     def __init__(self, opcode):
         super().__init__('<BB', opcode)
-        
+
+class ScriptObjectPathSwitch(ScriptInstruction):
+    def __init__(self, opcode):
+        self.opcode = opcode
+
+    def decode(self, buffer, offset):
+        self.args = list(struct.unpack_from('<BB', buffer, offset))
+        offset += 2
+        self.cases = []
+        for _ in range(self.args[1]):
+            case = list(struct.unpack_from('<BLB', buffer, offset))
+            offset += 6
+            self.cases.append(case)
+        return offset
+
+    def pretty_print(self):
+        string = super().pretty_print() + '\n'
+        for case in self.cases:
+            string += '  Case(' + ', '.join([str(x) for x in case]) + ')\n'
+        return string
+
+class ScriptObjectPathAction(ScriptInstructionWithArgs):
+    def __init__(self, opcode):
+        super().__init__('<HHHH', opcode)

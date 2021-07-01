@@ -31,6 +31,7 @@ So far, `extract.py` extracts the following parts:
 - `PackFieldData.dat` (character names)
 - `eboot.bin` (system & some menu text)
 - `Script/**/*.dat` (story text; some files throw an error---it remains to be checked whether this is critical or not)
+- `Field/MapData/*.dat` (NPC and additional story text)
 - `Skit/**/*.dat` (skit text)
 
 ### `recompile.py`

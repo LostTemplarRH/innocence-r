@@ -21,6 +21,10 @@ class ScriptCameraSceneWait(ScriptInstruction):
 class ScriptCameraLockPlayer(ScriptInstruction):
     pass
 
+class ScriptCameraLockObject(ScriptInstructionWithArgs):
+    def __init__(self, opcode):
+        super().__init__('<B', opcode)
+
 class ScriptCameraShake(ScriptInstructionWithArgs):
     def __init__(self, opcode):
         super().__init__('<HH', opcode)
@@ -50,3 +54,7 @@ class ScriptCameraMovePointSpeed(ScriptInstructionWithArgs):
 class ScriptCameraMovePlayerSpeed(ScriptInstructionWithArgs):
     def __init__(self, opcode):
         super().__init__('<L', opcode)
+    
+class ScriptCameraMoveObjectSpeed(ScriptInstructionWithArgs):
+    def __init__(self, opcode):
+        super().__init__('<BL', opcode)

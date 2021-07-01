@@ -169,6 +169,10 @@ class ScriptPartyRest(ScriptInstructionWithArgs):
     def __init__(self, opcode):
         super().__init__('<B', opcode)
 
+class ScriptPartyDamage(ScriptInstructionWithArgs):
+    def __init__(self, opcode):
+        super().__init__('<B', opcode)
+
 class ScriptScriptEntry(ScriptInstructionWithArgs):
     def __init__(self, opcode):
         super().__init__('<H', opcode)
@@ -289,6 +293,10 @@ class ScriptNaviMapFullOpen(ScriptInstructionWithArgs):
     def __init__(self, opcode):
         super().__init__('<B', opcode)
 
+class ScriptNaviMapChange(ScriptInstructionWithArgs):
+    def __init__(self, opcode):
+        super().__init__('<B', opcode)
+
 class ScriptMapFadeAlpha(ScriptInstructionWithArgs):
     def __init__(self, opcode):
         super().__init__('<BB', opcode)
@@ -320,6 +328,17 @@ class ScriptPartyLvAvgSet(ScriptInstructionWithArgs):
 class ScriptShipPointSet(ScriptInstructionWithArgs):
     def __init__(self, opcode):
         super().__init__('<B', opcode)
+
+class ScriptFreeFrameEnable(ScriptInstructionWithArgs):
+    def __init__(self, opcode):
+        super().__init__('<BB', opcode)
+
+class ScriptCookingStateReset(ScriptInstructionWithArgs):
+    def __init__(self, opcode):
+        super().__init__('<B', opcode)
+
+class ScriptSuccessionJump(ScriptInstruction):
+    pass
 
 _OPCODE_MAP = {
     0x00: ScriptLabel,
@@ -364,9 +383,11 @@ _OPCODE_MAP = {
     0x27: ScriptCameraScenePlay,
     0x28: ScriptCameraSceneWait,
     0x29: ScriptCameraLockPlayer,
+    0x2A: ScriptCameraLockObject,
     0x2C: ScriptCameraLockRelease,
     0x2D: ScriptMapChange,
     0x2E: ScriptMapChangeEnable,
+    0x2F: ScriptFreeFrameEnable,
     0x30: ScriptEncountControl,
     0x31: ScriptNaviMapFullOpen,
     0x32: ScriptMoneyAdd,
@@ -393,6 +414,8 @@ _OPCODE_MAP = {
     0x54: ScriptWeatherEnable,
     0x55: ScriptBattleStart,
     0x56: ScriptBattleSetting,
+    0x58: ScriptObjectPathSwitch,
+    0x59: ScriptObjectPathAction,
     0x5A: ScriptEventSkipSet,
     0x5B: ScriptScriptEntry,
     0x5C: ScriptSubScriptStart,
@@ -434,6 +457,7 @@ _OPCODE_MAP = {
     0x81: ScriptBattleBookSet,
     0x82: ScriptShopLVSet,
     0x83: ScriptSuperArtsSet,
+    0x84: ScriptCookingStateReset,
     0x85: ScriptRaveLVSet,
     0x86: ScriptAbilityPlateOpen,
     0x87: ScriptShipTypeSet,
@@ -484,7 +508,9 @@ _OPCODE_MAP = {
     0xC4: ScriptEffectAlphaWait,
     0xC5: ScriptSceneMoviePlay,
     0xC6: ScriptEquipChange,
+    0xC7: ScriptPlayerPushCancel,
     0xC8: ScriptSkitWait,
+    0xC9: ScriptPartyDamage,
     0xCA: ScriptVoicePlay,
     0xCB: ScriptEffectMovePosFrame,
     0xCC: ScriptBgmStop,
@@ -495,6 +521,7 @@ _OPCODE_MAP = {
     0xD1: ScriptObjectMotionWait,
     0xD3: ScriptPlayerMotionWait,
     0xD4: ScriptCameraMovePlayerSpeed,
+    0xD5: ScriptCameraMoveObjectSpeed,
     0xD6: ScriptCameraMovePointSpeed,
     0xD7: ScriptMsgActionOff,
     0xD8: ScriptObjectMouseAction,
@@ -514,15 +541,19 @@ _OPCODE_MAP = {
     0xE9: ScriptObjectMotionFrameSet,
     0xEA: ScriptEffectWait,
     0xEC: ScriptObjectCostumeSet,
+    0xED: ScriptPlayerShadowDisp,
     0xEE: ScriptObjectShadowDisp,
     0xEF: ScriptSeVolume,
     0xF0: ScriptFarViewVisible,
     0xF1: ScriptFarViewPosSet,
+    0xF2: ScriptInfoMsg,
     0xF3: ScriptObjectMotionSpeedSet,
+    0xF4: ScriptNaviMapChange,
     0xF5: ScriptArtsSet,
     0xF6: ScriptParamAdd,
     0xF7: ScriptStaffRollJump,
     0xF8: ScriptClearSaveJump,
+    0xF9: ScriptSuccessionJump,
     0xFA: ScriptPartyTopSet,
     0xFB: ScriptPartyLvAvgSet,
 }

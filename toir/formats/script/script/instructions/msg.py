@@ -58,3 +58,7 @@ class ScriptMsgWindowSet(ScriptInstruction):
 
 class ScriptChoice(ScriptSelectCommand):
     pass
+
+class ScriptInfoMsg(ScriptInstructionWithArgs):
+    def __init__(self, opcode):
+        super().__init__('<B', opcode)
