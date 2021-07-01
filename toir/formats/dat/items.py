@@ -1,4 +1,4 @@
-from .sections import read_sections, read_dat_header
+from .sections import read_sections, read_dat_header, append_section
 import struct
 from collections import namedtuple
 from ...text import decode_text, encode_text
@@ -106,7 +106,6 @@ def write_items(category, names, descriptions, items):
         description += bytes(0x92 - len(description))
         desc_start = 4 + i * 0x92
         descriptions[desc_start:desc_start+0x92] = description
-    return items
 
 def insert_items(binary, items):
     newbinary = read_dat_header(binary)
@@ -114,15 +113,10 @@ def insert_items(binary, items):
     for i in range(0, len(_ITEM_CATEGORIES)):
         write_items(_ITEM_CATEGORIES[i], sections[2*i], sections[2*i+1],
                     items[_ITEM_CATEGORIES[i].name])
-        newbinary += sections[2*i]
-        if len(newbinary) % 16 != 0:
-            newbinary += bytes(16 - len(newbinary) % 16)
-        newbinary += sections[2*i+1]
-        if len(newbinary) % 16 != 0:
-            newbinary += bytes(16 - len(newbinary) % 16)
-    newbinary += sections[-1]
-    if len(newbinary) % 16 != 0:
-        newbinary += bytes(16 - len(newbinary) % 16)
+        newbinary = append_section(newbinary, sections[2*i])
+        newbinary = append_section(newbinary, sections[2*i+1])
+    newbinary = append_section(newbinary, sections[-1])
+    assert(len(binary) == len(newbinary))
     return newbinary
 
 def recompile_items(l7cdir, csvdir, outputdir):

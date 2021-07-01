@@ -1,5 +1,6 @@
 from .instructions import ScriptInstruction, ScriptMsg, ScriptSelectCommand
 import struct
+from collections import namedtuple
 
 class DecompilationException(Exception):
     pass
@@ -12,6 +13,8 @@ class OffsetSizeMismatchError(DecompilationException):
 
     def __str__(self):
         return f'offset ({self.offset})/size ({self.size}) mismatch during decompilation'
+
+TextWithSpeaker = namedtuple('TextWithSpeaker', ['speaker', 'text'])
 
 class Script:
     @staticmethod
@@ -40,10 +43,10 @@ class Script:
         texts = {}
         for i, instruction in enumerate(self.instructions):
             if isinstance(instruction, ScriptMsg):
-                texts[f'{i}'] = instruction.text
+                texts[f'{i}'] = TextWithSpeaker(instruction.speaker, instruction.text)
             elif isinstance(instruction, ScriptSelectCommand):
                 for j, command in enumerate(instruction.commands):
-                    texts[f'{i}/{j}'] = command
+                    texts[f'{i}/{j}'] = TextWithSpeaker(None, command)
 
         return texts
     

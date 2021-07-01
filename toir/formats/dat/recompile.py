@@ -1,7 +1,9 @@
 from .items import recompile_items
+from .artes import recompile_artes
 
 _RECOMPILERS = [
     recompile_items,
+    recompile_artes,
 ]
 
 def recompile_dat(l7cdir, csvdir, outputdir):

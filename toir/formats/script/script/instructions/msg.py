@@ -16,14 +16,14 @@ def _transform_codes(text):
 
 class ScriptMsg(ScriptInstruction):
     def decode(self, buffer, offset):
-        self.arg1, length = struct.unpack_from('<BH', buffer, offset)
+        self.speaker, length = struct.unpack_from('<BH', buffer, offset)
         #self.text = decode_text(buffer[offset+3:offset+length+3], 0)
         self.text = decode_text_fixed(buffer, offset+3, length)
         self.text = remove_redundant_cc(self.text)
         return offset + length + 3
  
     def pretty_print(self):
-        return f'ScriptMsg({self.arg1}, "{self.text}")'
+        return f'ScriptMsg({self.speaker}, "{self.text}")'
 
 class ScriptSelectCommand(ScriptInstruction):
     def decode(self, buffer, offset):

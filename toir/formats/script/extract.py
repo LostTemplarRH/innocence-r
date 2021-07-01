@@ -1,5 +1,6 @@
-from .script import Script, DecompilationException
+from .script import Script, DecompilationException, TextWithSpeaker
 import csv
+from .. import read_chara_names
 
 def extract_dat(file):
     dat = file.open('rb')
@@ -30,15 +31,24 @@ def extract_dats(l7cdir):
 
 def write_to_csv(script, outputdir):
     with open(outputdir / 'Script.csv', 'w', encoding='utf-8', newline='') as f:
-        writer = csv.DictWriter(f, ['path', 'id', 'text'])
+        writer = csv.DictWriter(f, ['path', 'id', 'speaker', 'text'])
         for location, texts in script.items():
-            for id, text in texts.items():
+            for id, line in texts.items():
                 writer.writerow({
                     'path': location,
                     'id': id,
-                    'text': text,
+                    'speaker': line.speaker if line.speaker else '',
+                    'text': line.text,
                 })
+
+def replace_speakers(l7cdir, script):
+    names = read_chara_names(l7cdir)
+    for _, texts in script.items():
+        for id, line in texts.items():
+            if line.speaker:
+                texts[id] = TextWithSpeaker(names[line.speaker], line.text)
 
 def extract_script(l7cdir, outputdir):
     script = extract_dats(l7cdir)
+    replace_speakers(l7cdir, script)
     write_to_csv(script, outputdir)
