@@ -1,6 +1,19 @@
 import struct
 from ...text import decode_text_fixed, remove_redundant_cc, decode_text
 
+class SkitText:
+    pass
+
+class SkitLine(SkitText):
+    def __init__(self, speakers, text, speakerName=None):
+        self.speakers = speakers
+        self.text = text
+        self.speakerName = speakerName
+
+class SkitChoices(SkitText):
+    def __init__(self, choices):
+        self.choices = choices
+
 class Skit:
     def __init__(self, skit_dat):
         self.dat = skit_dat
@@ -30,18 +43,30 @@ class Skit:
             opcode = self.dat[offset]
             if opcode == 0x17:
                 texts.append(self._extract_line(offset))
+            elif opcode == 0x1F:
+                texts.append(self._extract_choices(offset))
             elif opcode == 0x22:
                 i += 1
             i += 1
         return texts
 
     def _extract_line(self, offset):
-        speaker, flag, length, speakerOffset, line_offset = struct.unpack_from('<H3xB2xH4xLL', self.dat, offset + 2)    
+        speaker, flag, length, speakerOffset, line_offset = struct.unpack_from('<H3xB2xH4xLL', self.dat, offset + 2)
         tempSpeaker = None
         if flag != 0:
             tempSpeaker = decode_text(self.dat, speakerOffset)
         text = decode_text_fixed(self.dat, line_offset, length)
-        return speaker, remove_redundant_cc(text), tempSpeaker
+        return SkitLine(speaker, remove_redundant_cc(text), tempSpeaker)
+
+    def _extract_choices(self, offset):
+        count, = struct.unpack_from('B', self.dat, offset + 1)
+        choices = []
+        for i in range(count):
+            choice_offset, = struct.unpack_from('<L', self.dat, offset + 4 + i * 4)
+            text = decode_text(self.dat, choice_offset)
+            choices.append(remove_redundant_cc(text))
+        return SkitChoices(choices)
+
 
 def skit_extract_text(skit_dat):
     return Skit(skit_dat).extract_text()

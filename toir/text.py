@@ -60,9 +60,9 @@ def get_next_end(buffer, offset, end):
     if i == -1:
         return end
     else:
-        return min(i, end)
+        return min(i + 1, end)
 
-def decode_text(buffer, offset, max_len=0):
+def decode_text_and_offset(buffer, offset, max_len=0):
     if not max_len:
         end = len(buffer)
     else:
@@ -79,7 +79,14 @@ def decode_text(buffer, offset, max_len=0):
         next_at = buffer.find(b'@', last)
         next_end = get_next_end(buffer, last, end)
     text += buffer[last:next_end].decode('utf-8')
-    return text.replace('\r', '')
+    return text.replace('\r', ''), next_end
+
+def decode_text(buffer, offset, max_len=0):
+    text = decode_text_and_offset(buffer, offset, max_len)[0]
+    if text and text[-1] == '\0':
+        return text[:-1]
+    else:
+        return text
 
 def decode_text_fixed(buffer, offset, length):
     return decode_text(buffer, offset, length)

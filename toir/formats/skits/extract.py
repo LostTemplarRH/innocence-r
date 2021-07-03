@@ -1,4 +1,4 @@
-from .skit import skit_extract_text
+from .skit import skit_extract_text, SkitLine, SkitChoices
 import csv
 
 def split_speakers(speakers):
@@ -24,8 +24,13 @@ def extract_skits(l7cdir, outputdir):
             for i, speaker in enumerate(text[0]):
                 writer.writerow([path, 'speaker', i, '', speaker])
             for i, line in enumerate(text[1]):
-                if line[2]:
-                    writer.writerow([path, 'line_speaker', i, '', line[2]])                
-                speakers = split_speakers(line[0])
-                speakers = '\n'.join(f'{i} [{text[0][i]}]' for i in speakers)
-                writer.writerow([path, 'line', i, speakers, line[1]])
+                if isinstance(line, SkitLine):
+                    if line.speakerName:
+                        writer.writerow([path, 'line_speaker', i, '', line.speakerName])
+                    speakers = split_speakers(line.speakers)
+                    speakers = '\n'.join(f'{i} [{text[0][i]}]' for i in speakers)
+                    writer.writerow([path, 'line', i, speakers, line.text])
+                elif isinstance(line, SkitChoices):
+                    for j, choice in enumerate(line.choices):
+                        writer.writerow([path, 'choice', i, j, choice])
+

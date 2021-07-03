@@ -24,7 +24,7 @@ def extract(source, newtext, destination):
     destl7cdir.mkdir(parents=True, exist_ok=True)
 
     toir.recompile_dat(l7cdir, newtext, destl7cdir)
-    #toir.recompile_eboot(ebootpath, destination)
+    toir.recompile_eboot(ebootpath, newtext, destination)
 
 if __name__ == '__main__':
     extract()
