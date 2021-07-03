@@ -24,11 +24,13 @@ It is assumed that `<source>` is also a directory and has the following structur
 The sub-directory `toirelease_data` is expected to contain the decrypted and unpacked `toirelease_data.l7c`.
 
 So far, `extract.py` extracts the following parts:
-- `ItemDataPack.dat` (items)
-- `ArtsDataPack.dat` (Artes)
-- `BattleBookDataPack.dat` (battle book)
-- `CharaAbility.dat` (character abilities)
-- `PackFieldData.dat` (character names)
+- `System/ItemDataPack.dat` (items)
+- `System/ArtsDataPack.dat` (Artes)
+- `System/BattleBookDataPack.dat` (battle book)
+- `System/CharaAbility.dat` (character abilities)
+- `Field/PackFieldData.dat` (character names)
+- `Battle/MissionData.dat` (battle missions)
+- `Battle/TutorialData.dat` (battle tutorials)
 - `eboot.bin` (system & some menu text)
 - `Script/**/*.dat` (story text; some files throw an error---it remains to be checked whether this is critical or not)
 - `Field/MapData/*.dat` (NPC and additional story text)
@@ -48,6 +50,7 @@ Finally, `<destination>` is assumed to be a directory. Its contents is generated
 So far, `recompile.py` recompiles the following parts:
 - `ItemDataPack.dat` (items)
 - `ArtsDataPack.dat` (Artes)
+- `eboot.bin` (system & some menu text)
 
 ## Format of extracted `.csv` files
 
