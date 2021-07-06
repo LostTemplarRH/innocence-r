@@ -5,6 +5,7 @@ from .charaability import extract_chara_ability
 from .charanames import extract_chara_names
 from .tutorial import extract_tutorial
 from .mission import extract_mission
+from .enemies import extract_enemies
 
 _EXTRACTORS = [
     extract_items,
@@ -14,6 +15,7 @@ _EXTRACTORS = [
     extract_chara_names,
     extract_tutorial,
     extract_mission,
+    extract_enemies,
 ]
 
 def extract_dat(l7cdir, outputdir):
