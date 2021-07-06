@@ -35,7 +35,7 @@ class Skit:
 
     def _extract_lines(self):
         base, = struct.unpack_from('<L', self.dat, 12)
-        count, = struct.unpack_from('<B', self.dat, 6)
+        count, = struct.unpack_from('<H', self.dat, 6)
         i = 0
         texts = []
         while i < count:
@@ -66,7 +66,6 @@ class Skit:
             text = decode_text(self.dat, choice_offset)
             choices.append(remove_redundant_cc(text))
         return SkitChoices(choices)
-
 
 def skit_extract_text(skit_dat):
     return Skit(skit_dat).extract_text()
