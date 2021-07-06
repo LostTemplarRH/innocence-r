@@ -1,25 +1,67 @@
 import re
+import struct
+
+_ICONS_40 = {
+    0x0406: 'left_analog',
+    0x0706: 'start',
+    0x0906: 'dpad_r',
+    0x0a06: 'dpad_d',
+    0x0b06: 'dpad_l',
+    0x0c06: 'dpad_u',
+    0x0d06: 'dpad_lr',
+    0x0d06: 'dpad_du',
+    0x0f06: 'dpad',
+    0x0083: 'icon_fire',
+    0x0183: 'icon_earth',
+    0x0283: 'icon_wind',
+    0x0383: 'icon_water',
+    0x0483: 'icon_lightning',
+    0x0583: 'icon_light',
+    0x0683: 'icon_dark',
+    0x0783: 'icon_poison',
+    0x0883: 'icon_weak',
+    0x0a83: 'icon_paralysis',
+    0x0b83: 'icon_fear',
+    0x0c83: 'icon_patk',
+    0x0d83: 'icon_adef',
+    0x0e83: 'icon_aatk',
+    0x0f83: 'icon_pdef',
+}
+
+_BUTTONS_41 = {
+    0x00: 'circle',
+    0x01: 'cross',
+    0x02: 'square',
+    0x03: 'triangle',
+    0x04: 'l1',
+    0x05: 'l2'
+}
+
+_COLORS = {
+    0x01: 'red',
+    0x02: 'cyan',
+    0x03: 'blue',
+    0x04: 'white',
+}
 
 def decode_control_code(text, i):
     try:
         code = text[i + 1]
         if code == 0x01:
             arg = text[i + 3]
-            if arg == 0x03:
-                return '{emph}', i + 4
-            elif arg == 0x04:
-                return '{regular}', i + 4
+            if arg in _COLORS:
+                return _COLORS[arg], i + 4
             else:
-                return '{01}', i + 2        
+                return '{x01}', i + 2        
         elif code == 0x02:
             index = text[i + 3] + (text[i + 4] << 8)
-            return f'{{item:{index:04X}}}', i + 5
+            return f'{{item:0x{index:04X}}}', i + 5
         elif code == 0x03:
             index = text[i + 3] + (text[i + 4] << 8)
-            return f'{{unknown03:{index:04X}}}', i + 5
+            return f'{{unknown03:0x{index:04X}}}', i + 5
         elif code == 0x04:
             index = text[i + 3] + (text[i + 4] << 8)
-            return f'{{number:{index:04X}}}', i + 5
+            return f'{{number:0x{index:04X}}}', i + 5
         elif code == 0x05:
             arg = text[i + 3]
             if arg == 0x01:
@@ -27,17 +69,23 @@ def decode_control_code(text, i):
             elif arg == 0x02:
                 return '{fixed}', i + 4
             else:
-                return '{05}', i + 2
+                return '{x05}', i + 2
         elif code == 0x40:
             index = text[i + 3] + ((text[i + 4]) << 8)
-            return f'{{button:{index:04X}}}', i + 5
+            if index in _ICONS_40:
+                return _ICONS_40[index], i + 5
+            else:
+                return f'{{icon:0x{index:04X}}}', i + 5
         elif code == 0x41:
             index = text[i + 3]
-            return f'{{unknown41:{index:02X}}}', i + 4
+            if index in _BUTTONS_41:
+                return 'remap_' + _BUTTONS_41[index], i + 4
+            else:
+                return f'{{button:0x{index:02X}}}', i + 4
         elif code == 0x42:
             return '{triverse}', i + 2
         else:
-            return f'{{{code:02X}}}', i + 2
+            return f'{{x{code:02X}}}', i + 2
     except Exception as e:
         raise ValueError(str(e) + f' ("{text}")')
 
@@ -91,5 +139,51 @@ def decode_text(buffer, offset, max_len=0):
 def decode_text_fixed(buffer, offset, length):
     return decode_text(buffer, offset, length)
 
+_FIXED_CC = {
+    'variable': b'@\x05@\x01',
+    'fixed': b'@\x05@\x02',
+    'triverse': b'@B'
+}
+_FIXED_CC |= {
+    key: b'@\x40@' + struct.pack('<H', index) for index, key in _ICONS_40.items()
+}
+_FIXED_CC |= {
+    key: b'@\x41@' + struct.pack('<B', index) for index, key in _BUTTONS_41.items()
+}
+_FIXED_CC |= {
+    key: b'@\x01@' + struct.pack('<B', index) for index, key in _COLORS.items()
+}
+
+def encode_control_code(text):
+    code, arg = text.split(':')
+    encoded = _FIXED_CC.get(code, None)
+    if encoded:
+        return encoded
+    
+    if code == 'item':
+        return b'@\x02@' + struct.pack('<H', int(arg, 0))
+    elif code == 'number':
+        return b'@\x04@' + struct.pack('<H', int(arg, 0))
+    elif code == 'icon':
+        return b'@\x40@' + struct.pack('<H', int(arg, 0))
+    elif code == 'button':
+        return b'@\x41@' + struct.pack('<B', int(arg, 0))
+
+    if code[0] == 'x':
+        return struct.pack('B', int(code[1:], 16))
+
+    raise ValueError(f'unknown control code: {code}')
+
 def encode_text(string):
-    return string.encode('utf-8') + b'\0'
+    buffer = bytes()
+    next_cc = string.find('{')
+    next_cc_end = 0
+    while next_cc != -1:
+        buffer += string[next_cc_end+1:next_cc].encode('utf-8')
+        next_cc += 1
+        next_cc_end = string.find('}', next_cc)
+        buffer += encode_control_code(string[next_cc:next_cc_end]);
+        next_cc = string.find('{', next_cc)
+    buffer += string[next_cc_end:].encode('utf-8')
+    buffer += b'\b'
+    return buffer
