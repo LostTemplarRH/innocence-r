@@ -50,7 +50,7 @@ def decode_control_code(text, i):
         if code == 0x01:
             arg = text[i + 3]
             if arg in _COLORS:
-                return _COLORS[arg], i + 4
+                return f'{{{_COLORS[arg]}}}', i + 4
             else:
                 return '{x01}', i + 2        
         elif code == 0x02:
@@ -79,7 +79,7 @@ def decode_control_code(text, i):
         elif code == 0x41:
             index = text[i + 3]
             if index in _BUTTONS_41:
-                return 'remap_' + _BUTTONS_41[index], i + 4
+                return '{remap_' + _BUTTONS_41[index] + '}', i + 4
             else:
                 return f'{{button:0x{index:02X}}}', i + 4
         elif code == 0x42:
