@@ -127,7 +127,7 @@ def decode_text_and_offset(buffer, offset, max_len=0):
         next_at = buffer.find(b'@', last)
         next_end = get_next_end(buffer, last, end)
     text += buffer[last:next_end].decode('utf-8')
-    return text.replace('\r', ''), next_end
+    return text.replace('\r', '').replace('\0', ''), next_end
 
 def decode_text(buffer, offset, max_len=0):
     text = decode_text_and_offset(buffer, offset, max_len)[0]
@@ -155,7 +155,11 @@ _FIXED_CC |= {
 }
 
 def encode_control_code(text):
-    code, arg = text.split(':')
+    if ':' in text:
+        code, arg = text.split(':')
+    else:
+        code = text
+
     encoded = _FIXED_CC.get(code, None)
     if encoded:
         return encoded
@@ -185,5 +189,5 @@ def encode_text(string):
         buffer += encode_control_code(string[next_cc:next_cc_end]);
         next_cc = string.find('{', next_cc)
     buffer += string[next_cc_end:].encode('utf-8')
-    buffer += b'\b'
+    buffer += b'\0'
     return buffer
