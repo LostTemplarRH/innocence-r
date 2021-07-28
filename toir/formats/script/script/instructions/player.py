@@ -1,5 +1,4 @@
 from . import ScriptInstructionWithArgs, ScriptInstruction
-import struct
 
 class ScriptPlayerVisible(ScriptInstructionWithArgs):
     def __init__(self, opcode):

@@ -1,5 +1,5 @@
 from . import ScriptInstruction, ScriptInstructionWithArgs
-from .....text import decode_text_fixed, remove_redundant_cc
+from .....text import decode_text_fixed, remove_redundant_cc, encode_text_fixed
 import struct
 
 def _transform_codes(text):
@@ -22,13 +22,18 @@ class ScriptMsg(ScriptInstruction):
         self.text = remove_redundant_cc(self.text)
         return offset + length + 3
  
+    def encode(self):
+        text = encode_text_fixed(self.text)
+        binary = struct.pack('<BBH', self.opcode, self.speaker, len(text))
+        return binary + text
+
     def pretty_print(self):
         return f'ScriptMsg({self.speaker}, "{self.text}")'
 
 class ScriptSelectCommand(ScriptInstruction):
     def decode(self, buffer, offset):
         count = buffer[offset]
-        self.commands_arg = buffer[offset+1:offset+count+1]
+        self.commands_arg = list(buffer[offset+1:offset+count+1])
         offset += count + 1
         self.commands = []
         for _ in range(count):
@@ -40,21 +45,25 @@ class ScriptSelectCommand(ScriptInstruction):
             self.commands.append(text)
         return offset
 
+    def encode(self):
+        binary = bytes([self.opcode, len(self.commands)])
+        binary += bytes(self.commands_arg)
+        for command in self.commands:
+            text = encode_text_fixed(command)
+            binary += bytes([len(text)])
+            binary += text
+        return binary
+
 class ScriptSelectCancel(ScriptInstructionWithArgs):
     def __init__(self, opcode):
         super().__init__('<B', opcode)
 
 class ScriptMsgWait(ScriptInstruction):
-    def decode(self, buffer, offset):
-        return offset
+    pass
 
-class ScriptMsgWindowSet(ScriptInstruction):
-    def decode(self, buffer, offset):
-        self.arg = buffer[offset]
-        return offset + 1
-
-    def pretty_print(self):
-        return f'ScriptMsgWindowSet({self.arg})'
+class ScriptMsgWindowSet(ScriptInstructionWithArgs):
+    def __init__(self, opcode):
+        super().__init__('<B', opcode)
 
 class ScriptChoice(ScriptSelectCommand):
     pass

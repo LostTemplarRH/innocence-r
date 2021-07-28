@@ -1,34 +1,19 @@
 from . import ScriptInstruction, ScriptInstructionWithArgs
 import struct
 
-class ScriptLabel(ScriptInstruction):
+class ScriptLabel(ScriptInstructionWithArgs):
     def __init__(self, opcode):
-        self.mnemonic = 'label'
-        self.opcode = opcode
+        super().__init__('<B', opcode)
 
-    def decode(self, buffer, offset):
-        self.data = buffer[offset]
-        return offset + 1
-
-    def pretty_print(self):
-        return f'ScriptLabel({self.data})'
-
-class ScriptJump(ScriptInstruction):
+class ScriptJump(ScriptInstructionWithArgs):
     def __init__(self, opcode):
-        self.mnemonic = "jump"
-        self.opcode = opcode
-
-    def decode(self, buffer, offset):
-        self.target = buffer[offset]
-        return offset + 1
-
-    def pretty_print(self):
-        return f'ScriptJump({self.target})'
+        super().__init__('<B', opcode)
 
 class ScriptIfBox:
     def __init__(self):
         self.operators = []
         self.children = []
+        self.child_type = 0
 
     def decode(self, buffer, offset):
         self.childCount = buffer[offset]
@@ -47,6 +32,14 @@ class ScriptIfBox:
                 self.children.append(child)
         return offset
 
+    def encode(self):
+        binary = bytes([self.childCount])
+        binary += bytes(self.operators)
+        for child in self.children:
+            binary += bytes([child.child_type])
+            binary += child.encode()
+        return binary
+
     def pretty_print(self, indent=0):
         string = ' ' * (indent * 2) + f'box({self.operators})\n'
         for child in self.children:
@@ -55,7 +48,7 @@ class ScriptIfBox:
 
 class ScriptIfChild:
     def __init__(self):
-        pass
+        self.child_type = 1
 
     def decode(self, buffer, offset):
         self.arg1 = buffer[offset]
@@ -63,6 +56,9 @@ class ScriptIfChild:
         self.arg3, self.arg4 = struct.unpack_from('<LL', buffer, offset + 2)
         self.arg5 = buffer[offset + 10]
         return offset + 11
+
+    def encode(self):
+        return struct.pack('<BBLLB', self.arg1, self.arg2, self.arg3, self.arg4, self.arg5)
 
     def pretty_print(self, indent=0):
         return ' ' * (indent * 2) + f'child({self.arg1}, {self.arg2}, {self.arg3}, {self.arg4}, {self.arg5})\n'
@@ -79,6 +75,11 @@ class ScriptIf(ScriptInstruction):
         self.box = ScriptIfBox()
         return self.box.decode(buffer, offset + 3)      
 
+    def encode(self):
+        binary = bytes([self.opcode]) + struct.pack('<BBB', self.label, self.arg2, self.arg3)
+        binary += self.box.encode()
+        return binary
+
     def pretty_print(self):
         string = f'ScriptIf(label={self.label}, {self.arg2}, {self.arg3})\n'
         string += self.box.pretty_print(1)
@@ -94,6 +95,12 @@ class ScriptSwitch(ScriptInstruction):
             offset += 6
             self.cases.append(case)
         return offset
+
+    def encode(self):
+        binary = struct.pack('<BBLB', self.opcode, *self.args)
+        for case in self.cases:
+            binary += struct.pack('<BLB', *case)
+        return binary
 
     def pretty_print(self):
         string = super().pretty_print() + '\n'
@@ -125,6 +132,9 @@ class ScriptScriptJump(ScriptInstruction):
     def decode(self, buffer, offset):
         self.target, = struct.unpack_from('<H', buffer, offset)
         return offset + 2
+
+    def encode(self):
+        return struct.pack('<BH', self.opcode, self.target)
 
     def pretty_print(self):
         return f'ScriptScriptJump(target="{self.target:03}.dat")'

@@ -14,6 +14,15 @@ class OffsetSizeMismatchError(DecompilationException):
     def __str__(self):
         return f'offset ({self.offset})/size ({self.size}) mismatch during decompilation'
 
+class UnknownOpcodeError(DecompilationException):
+    def __init__(self, opcode, offset, script):
+        self.opcode = opcode
+        self.offset = offset
+        self.script = script
+
+    def __str__(self):
+        return f'opcode {self.opcode:02X} at offset {self.offset} unknown'
+
 TextWithSpeaker = namedtuple('TextWithSpeaker', ['speaker', 'text'])
 
 class Script:
@@ -23,7 +32,10 @@ class Script:
         offset = 2
         script = Script()
         for _ in range(count):
-            instruction = ScriptInstruction.from_opcode(buffer[offset])
+            try:
+                instruction = ScriptInstruction.from_opcode(buffer[offset])
+            except IndexError as e:
+                raise UnknownOpcodeError(buffer[offset], offset, script)
             start_offset = offset
             offset += 1
             offset = instruction.decode(buffer, offset)
@@ -50,8 +62,23 @@ class Script:
 
         return texts
     
+    def replace_texts(self, texts):
+        for i, content in texts.items():
+            instruction = self.instructions[i]
+            if isinstance(instruction, ScriptMsg):
+                self.instructions[i].text = content
+            elif isinstance(instruction, ScriptSelectCommand):
+                for j in range(len(instruction.commands)):
+                    instruction.commands[j] = content[j]
+
     def dump(self, f):
         for i, instruction in enumerate(self.instructions):
             f.write(f'[{i:3}:{instruction._offset:04X}] 0x{instruction.opcode:02X} ')
             f.write(instruction.pretty_print())
             f.write('\n')
+
+    def recompile(self):
+        binary = struct.pack('<H', len(self.instructions))
+        for instruction in self.instructions:
+            binary += instruction.encode()
+        return binary

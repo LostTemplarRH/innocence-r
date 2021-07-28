@@ -179,6 +179,9 @@ def encode_control_code(text):
     raise ValueError(f'unknown control code: {code}')
 
 def encode_text(string):
+    return encode_text_fixed(string) + b'\0'
+
+def encode_text_fixed(string):
     buffer = bytes()
     next_cc = string.find('{')
     next_cc_end = 0
@@ -189,5 +192,4 @@ def encode_text(string):
         buffer += encode_control_code(string[next_cc:next_cc_end]);
         next_cc = string.find('{', next_cc)
     buffer += string[next_cc_end:].encode('utf-8')
-    buffer += b'\0'
     return buffer

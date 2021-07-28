@@ -23,7 +23,7 @@ def extract(source, destination):
     #toir.extract_eboot(ebootpath, destination)
     #toir.extract_dat(l7cdir, destination)
     #toir.extract_map_data(l7cdir, destination)
-    #toir.extract_script(l7cdir, destination)
+    toir.extract_script(l7cdir, destination)
     toir.extract_skits(l7cdir, destination)
 
 if __name__ == '__main__':

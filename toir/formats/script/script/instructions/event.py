@@ -35,11 +35,17 @@ class ScriptEventFlagCalculate(ScriptInstruction):
         offset += 3
         self.terms = []
         for _ in range(term_count):
-            term = struct.unpack_from('<BBBLL', buffer, offset)
+            term = list(struct.unpack_from('<BBBLL', buffer, offset))
             offset += 11
             self.terms.append(term)
         return offset
         
+    def encode(self):
+        binary = struct.pack('<BHB', self.opcode, self.flag_index, len(self.terms))
+        for term in self.terms:
+            binary += struct.pack('<BBBLL', *term)
+        return binary
+
 class ScriptEventFlagFill(ScriptInstructionWithArgs):
     def __init__(self, opcode):
         super().__init__('<HHB', opcode)

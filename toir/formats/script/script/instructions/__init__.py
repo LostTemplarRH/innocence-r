@@ -15,6 +15,9 @@ class ScriptInstruction:
     def decode(self, buffer, offset):
         return offset
 
+    def encode(self):
+        return bytes([self.opcode])
+
     def pretty_print(self):
         if self.args:
             args = ', '.join([str(x) for x in self.args])
@@ -31,6 +34,9 @@ class ScriptInstructionWithArgs(ScriptInstruction):
         self.args = list(struct.unpack_from(self._format, buffer, offset))
         return offset + struct.calcsize(self._format)
 
+    def encode(self):
+        return bytes([self.opcode]) + struct.pack(self._format, *self.args)
+
 from .controlflow import *
 from .objects import *
 from .player import *
@@ -41,18 +47,15 @@ from .event import *
 from .msg import *
 
 class ScriptWaitKey(ScriptInstruction):
-    def decode(self, buffer, offset):
-        return offset
+    pass
 
-class ScriptFilterSetup(ScriptInstruction):
-    def decode(self, buffer, offset):
-        self.args = list(struct.unpack_from('<BBBB', buffer, offset))
-        return offset + 4
+class ScriptFilterSetup(ScriptInstructionWithArgs):
+    def __init__(self, opcode):
+        super().__init__('<BBBB', opcode)
 
-class ScriptFilterFade(ScriptInstruction):
-    def decode(self, buffer, offset):
-        self.args = list(struct.unpack_from('<BH', buffer, offset))
-        return offset + 3
+class ScriptFilterFade(ScriptInstructionWithArgs):
+    def __init__(self, opcode):
+        super().__init__('<BH', opcode)
 
 class ScriptFilterWait(ScriptInstruction):
     pass
@@ -192,6 +195,13 @@ class ScriptBattleStart(ScriptInstruction):
             self.args1.append(args)
         self.args2 = list(struct.unpack_from('<BHBB', buffer, offset))
         return offset + 5
+
+    def encode(self):
+        binary = struct.pack('<BB', self.opcode, len(self.args1))
+        for arg in self.args1:
+            binary += struct.pack('<HBB', *arg)
+        binary += struct.pack('<BHBB', *self.args2)
+        return binary
 
 class ScriptMapChange(ScriptInstructionWithArgs):
     def __init__(self, opcode):

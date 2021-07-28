@@ -1,27 +1,13 @@
 from . import ScriptInstruction, ScriptInstructionWithArgs
 import struct
 
-class ScriptObjectDirPlayer(ScriptInstruction):
+class ScriptObjectDirPlayer(ScriptInstructionWithArgs):
     def __init__(self, opcode):
-        self.opcode = opcode
+        super().__init__('<BBH', opcode)
 
-    def decode(self, buffer, offset):
-        self.arg1, self.arg2, self.arg3 = struct.unpack_from('<BBH', buffer, offset)
-        return offset + 4
-
-    def pretty_print(self):
-        return f'ScriptObjectDirPlayer({self.arg1}, {self.arg2}, {self.arg3})'
-
-class ScriptObjectDirDefault(ScriptInstruction):
+class ScriptObjectDirDefault(ScriptInstructionWithArgs):
     def __init__(self, opcode):
-        self.opcode = opcode
-
-    def decode(self, buffer, offset):
-        self.arg1, self.arg2, self.arg3 = struct.unpack_from('<BBH', buffer, offset)
-        return offset + 4
-
-    def pretty_print(self):
-        return f'ScriptObjectDirDefault({self.arg1}, {self.arg2}, {self.arg3})'
+        super().__init__('<BBH', opcode)
 
 class ScriptObjectVisible(ScriptInstructionWithArgs):
     def __init__(self, opcode):
@@ -30,6 +16,7 @@ class ScriptObjectVisible(ScriptInstructionWithArgs):
 class ScriptObjectMotionChange(ScriptInstructionWithArgs):
     def __init__(self, opcode):
         super().__init__('<BHBL', opcode)
+        
 class ScriptObjectMovePointFrame(ScriptInstructionWithArgs):
     def __init__(self, opcode):
         super().__init__('<BBHHB', opcode)
@@ -166,6 +153,12 @@ class ScriptObjectPathSwitch(ScriptInstruction):
             offset += 6
             self.cases.append(case)
         return offset
+
+    def encode(self):
+        binary = struct.pack('<BBB', self.opcode, *self.args)
+        for case in self.cases:
+            binary += struct.pack('<BLB', *case)
+        return binary
 
     def pretty_print(self):
         string = super().pretty_print() + '\n'
