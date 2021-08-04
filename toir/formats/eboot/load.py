@@ -24,6 +24,7 @@ _EBOOT_BIN_ENCRYPTED_HASH = ('3b64bec6656bcacd5ea03bad96c6f9be'
 def load_eboot(ebootpath, elf_okay=True):
     with open(ebootpath, 'rb') as f:
         eboot = f.read()
+        return eboot
     hash = hashlib.blake2b(eboot).hexdigest()
 
     if hash == _EBOOT_BIN_HASH:
