@@ -30,3 +30,35 @@ def write_csv_data(f, format, col_names, data):
     rows = _build_rows(format, col_names, data)
     for row in rows:
         writer.writerow(row)
+
+def _read_row(data, row, format, col_names):
+    if format[-1] == 's':
+        value = row[col_names[-1]]
+
+    current = data
+    for c, f in zip(col_names[:-2], format[:-2]):
+        if f == 'i':
+            index = int(row[c])
+            if index not in current:
+                current[index] = {}
+            current = current[index]
+        elif f == 'f':
+            field = row[c]
+            if field not in current:
+                current[field] = {}
+            current = current[field]    
+
+    print(format[-2], col_names[-2])
+    if format[-2] == 'i':
+        index = int(row[col_names[-2]])
+        current[index] = value
+    elif format[-2] == 'f':
+        field = row[row[col_names[-2]]]
+        current[field] = value
+
+def read_csv_data(f, format, col_names):
+    reader = csv.DictReader(f)
+    data = {}
+    for row in reader:
+        _read_row(data, row, format, col_names)
+    return data
