@@ -11,14 +11,14 @@ def _read_story(csvdir):
                 story[file] = {}
             translation = row['English']
 
-            if '/' in row['Index']:
-                index, subindex = row['Index'].split('/')
+            if '/' in row['#']:
+                index, subindex = row['#'].split('/')
                 index, subindex = int(index), int(subindex)
                 if index not in story[file]:
                     story[file][index] = {}
                 story[file][index][subindex] = translation
             else:
-                story[file][int(row['Index'])] = translation
+                story[file][int(row['#'])] = translation
            
     return story
 

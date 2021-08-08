@@ -1,7 +1,9 @@
+from .sections import encode_section_text
 from .datfile import DatFile
 import struct
 import io
-from ...text import decode_text
+from ...text import decode_text, encode_text
+from ...csvhelper import read_csv_data
 import csv
 
 def write_csv_data(f, format, col_names, data):
@@ -52,4 +54,23 @@ def extract_chara_names(l7cdir, outputdir):
     with open(outputdir / 'Locations.csv', 'w', encoding='utf-8', newline='') as f:
         write_csv_data(f, 'i', ['index', 'japanese'], locations)
     with open(outputdir / 'SkitNames.csv', 'w', encoding='utf-8', newline='') as f:
-        write_csv_data(f, 'i', ['index', 'japanese'], skits)        
+        write_csv_data(f, 'i', ['index', 'japanese'], skits)
+
+def recompile_pack_field(l7cdir, csvdir, outputdir):
+    with open(csvdir / 'CharaNames.csv', 'r', encoding='utf-8', newline='') as f:
+        chara_names = read_csv_data(f, 'is', ['#', 'English'])
+
+    with open(l7cdir / '_Data/Field/PackFieldData.dat', 'rb') as f:
+        binary = f.read()
+    dat = DatFile(io.BytesIO(binary))
+
+    namesdat = bytearray(dat.sections[30])
+    for i, name in chara_names.items():
+        encode_section_text(namesdat, name, 2 + i * 0x24, max_length=0x20,
+                            id=f'CharaNames.csv:{i}')
+    dat.sections[30] = namesdat
+
+    outputfile = outputdir / '_Data/Field/PackFieldData.dat'
+    outputfile.parent.mkdir(parents=True, exist_ok=True)
+    with open(outputfile, 'wb') as f:
+        dat.save(f)
