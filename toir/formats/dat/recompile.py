@@ -5,7 +5,7 @@ from .charanames import recompile_pack_field
 _RECOMPILERS = [
     recompile_items,
     recompile_artes,
-    recompile_pack_field,
+    #recompile_pack_field,
 ]
 
 def recompile_dat(l7cdir, csvdir, outputdir):

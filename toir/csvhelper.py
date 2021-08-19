@@ -48,7 +48,7 @@ def _read_row(data, row, format, col_names):
                 current[field] = {}
             current = current[field]    
 
-    print(format[-2], col_names[-2])
+    #print(format[-2], col_names[-2])
     if format[-2] == 'i':
         index = int(row[col_names[-2]])
         current[index] = value

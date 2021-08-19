@@ -73,10 +73,8 @@ def recompile_texture(texture):
         header += b'\x20\x08'
         for row in reversed(list(rows)):
             for i in range(0, len(row), 4):
-                header += row[i * 4 + 2]
-                header += row[i * 4 + 1]
-                header += row[i * 4 + 0]
-                header += row[i * 4 + 3]
+                header += struct.pack('BBBB', row[i + 2], row[i + 1],
+                                      row[i + 0], row[i + 3])
         return header
     elif info['planes'] == 1 and info['bitdepth'] == 8 and info['greyscale'] == False:
         header = b'\x00\x01\x01\x00\x00\x00\x01\x20\x00\x00\x00\x00'
@@ -99,6 +97,6 @@ def recompile_textures(l7cdir, texdir, outputdir):
                     texture = open(file, 'rb').read()
                     dat.sections[index] = recompile_texture(texture)
                     (outputdir / texdir).mkdir(parents=True, exist_ok=True)
-                    print(outputdir / texdir / tex_file)
+                    #print(outputdir / texdir / tex_file)
                     with open(outputdir / texdir / tex_file, 'wb') as f2:
                         dat.save(f2)

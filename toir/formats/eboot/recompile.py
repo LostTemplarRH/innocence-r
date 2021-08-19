@@ -71,7 +71,6 @@ def recompile_eboot(ebootpath, csvpath, outputdir):
     # slot!)
     slots = SortedList([], key=lambda x: x.size)
     unique_ptrs = {pointer.value for pointer in pointers}
-    print(len(unique_ptrs), len(pointers))
     for value in unique_ptrs:
         length = _decode_length(eboot, value)
         slots.add(Slot(value, length))
