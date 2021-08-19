@@ -142,7 +142,7 @@ def decode_text_fixed(buffer, offset, length):
 _FIXED_CC = {
     'variable': b'@\x05@\x01',
     'fixed': b'@\x05@\x02',
-    'triverse': b'@B'
+    'triverse': b'@B',
 }
 _FIXED_CC |= {
     key: b'@\x40@' + struct.pack('<H', index) for index, key in _ICONS_40.items()
@@ -173,7 +173,7 @@ def encode_control_code(text):
     elif code == 'button':
         return b'@\x41@' + struct.pack('<B', int(arg, 0))
 
-    if code[0] == 'x':
+    if code[0] == 'x' and len(code) == 3:
         return struct.pack('B', int(code[1:], 16))
 
     raise ValueError(f'unknown control code: {code}')
@@ -186,10 +186,11 @@ def encode_text_fixed(string):
     next_cc = string.find('{')
     next_cc_end = 0
     while next_cc != -1:
-        buffer += string[next_cc_end+1:next_cc].encode('utf-8')
+        buffer += string[next_cc_end:next_cc].encode('utf-8')
         next_cc += 1
         next_cc_end = string.find('}', next_cc)
         buffer += encode_control_code(string[next_cc:next_cc_end]);
         next_cc = string.find('{', next_cc)
+        next_cc_end += 1
     buffer += string[next_cc_end:].encode('utf-8')
     return buffer

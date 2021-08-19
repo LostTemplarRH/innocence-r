@@ -37,3 +37,7 @@ class DatFile:
             f.write(section)
             if len(section) % 16 != 0:
                 f.write(bytes(16 - (len(section) % 16)))
+
+    def save_to_file(self, path):
+        with open(path, 'wb') as f:
+            self.save(f)

@@ -2,7 +2,7 @@ from .sections import encode_section_text
 from .datfile import DatFile
 import struct
 import io
-from ...text import decode_text, encode_text
+from ...text import decode_text
 from ...csvhelper import read_csv_data
 import csv
 

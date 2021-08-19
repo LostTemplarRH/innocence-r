@@ -62,3 +62,7 @@ def read_csv_data(f, format, col_names):
     for row in reader:
         _read_row(data, row, format, col_names)
     return data
+
+def read_csv_file(path, format, col_names):
+    with open(path, 'r', newline='', encoding='utf-8') as f:
+        return read_csv_data(f)
