@@ -182,6 +182,7 @@ def encode_text(string):
     return encode_text_fixed(string) + b'\0'
 
 def encode_text_fixed(string):
+    string = string.replace('\r', '').replace('\n', '\r\n')
     buffer = bytes()
     next_cc = string.find('{')
     next_cc_end = 0
